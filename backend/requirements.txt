@@ -1,0 +1,13 @@
+Django>=4.2,<5.0
+djangorestframework
+gunicorn
+psycopg2-binary  # For PostgreSQL
+python-dotenv
+django-allauth
+djangorestframework-simplejwt
+django-cors-headers
+Pillow
+requests
+
+
+

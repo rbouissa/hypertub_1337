@@ -1,0 +1,144 @@
+#first version this was working perfectly
+# version: '3.8'
+
+# services:
+#   db:
+#     image: postgres:15
+#     container_name: db
+#     restart: always
+#     environment:
+#       POSTGRES_DB: ${DB_NAME}
+#       POSTGRES_USER: ${DB_USER}
+#       POSTGRES_PASSWORD: ${DB_PASSWORD}
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#     networks:
+#       - app_network
+#     ports:
+#       - "5432:5432"
+
+#   backend:
+#     build:
+#       context: ./backend
+#     container_name: backend
+#     command: python manage.py runserver 0.0.0.0:8000
+#     volumes:
+#       - ./backend:/app
+#     ports:
+#       - "8000:8000"
+#     env_file:
+#       - .env
+#     depends_on:
+#       - db
+#     networks:
+#       - app_network
+
+#   frontend:
+#     build:
+#       context: ./frontend/my-react-app
+#     container_name: frontend
+#     command: npm run dev -- --host 0.0.0.0 --port 3000
+#     volumes:
+#       - ./frontend/my-react-app:/app
+#       - /app/node_modules
+#     ports:
+#       - "3000:3000"
+#     environment:
+#       NODE_ENV: development
+#     stdin_open: true
+#     tty: true
+#     depends_on:
+#       - backend
+#     networks:
+#       - app_network
+
+# volumes:
+#   postgres_data:
+
+# networks:
+#   app_network:
+#     driver: bridge
+
+
+
+
+
+
+
+
+version: '3.8'
+
+services:
+  # Postgres Database
+  # db:
+  #   image: postgres:15
+  #   container_name: db
+  #   restart: always
+  #   environment:
+  #     POSTGRES_DB: ${DB_NAME}
+  #     POSTGRES_USER: ${DB_USER}
+  #     POSTGRES_PASSWORD: ${DB_PASSWORD}
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - app_network
+  #   ports:
+  #     - "5432:5432"
+
+  # Django Backend
+  backend:
+    build:
+      context: ./backend
+    container_name: backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend/hypertyb:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    # depends_on:
+    #   - db
+    networks:
+      - app_network
+
+  # Frontend Development (live reload)
+  # frontend-dev:
+    # build:
+    #   context: ./frontend/my-react-app
+    #   dockerfile: Dockerfile.dev
+    # container_name: frontend-dev
+    # volumes:
+    #   - ./frontend/my-react-app:/app
+    #   - /app/node_modules
+    # ports:
+    #   - "3000:3000"
+    # environment:
+    #   NODE_ENV: development
+    #   CHOKIDAR_USEPOLLING: "true"
+    # stdin_open: true
+    # tty: true
+    # depends_on:
+    #   - backend
+    # networks:
+    #   - app_network
+
+  # Frontend Production (served by Nginx)
+  # frontend:
+  #   build:
+  #     context: ./frontend/my-react-app
+  #   container_name: frontend
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - app_network
+
+volumes:
+  postgres_data:
+
+networks:
+  app_network:
+    driver: bridge

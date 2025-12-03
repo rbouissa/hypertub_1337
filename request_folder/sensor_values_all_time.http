@@ -1,0 +1,20 @@
+#this apis for getting values of sensors the history value
+###
+GET  http://localhost:8000/api/historypm03/
+Accept: application/json
+
+
+###
+GET  http://localhost:8000/api/historypm10/
+Accept: application/json
+
+###
+GET  http://localhost:8000/api/historypm25/
+Accept: application/json
+
+###
+GET  http://localhost:8000/api/historyhumidity/
+Accept: application/json
+###
+GET  http://localhost:8000/api/historytemperature/
+Accept: application/json
