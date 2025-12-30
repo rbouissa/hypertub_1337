@@ -118,3 +118,24 @@ class LogoutSerializer(serializers.Serializer):
         except TokenError:
             # Handle the case of an invalid token
             self.fail('bad_token')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from rest_framework import serializers
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)

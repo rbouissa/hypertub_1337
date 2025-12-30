@@ -135,8 +135,22 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # }
 
 
+#this for oauth authentication for intra 42
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+OAUTH_42_CLIENT_ID = 'u-s4t2ud-66e7507845a8f855368de1c99a9c0d7ba0cd1ef350f00ba07403f12b18d290ac'
+OAUTH_42_CLIENT_SECRET = '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'
+OAUTH_42_REDIRECT_URI = 'http://localhost:8080/dashboard'
+OAUTH_42_AUTHORIZATION_URL = 'https://api.intra.42.fr/oauth/authorize'
+OAUTH_42_TOKEN_URL = 'https://api.intra.42.fr/oauth/token'
+OAUTH_42_API_BASE_URL = 'https://api.intra.42.fr/v2'
 
+#this is the end put your hand and count to ten 
+ #this is for the email
+import os
+OAUTH_email_CLIENT_ID = os.getenv("OAUTH_email_CLIENT_ID")
+OAUTH_email_CLIENT_SECRET=os.getenv("OAUTH_email_CLIENT_SECRE")
+OAUTH_email_REDIRECT_URI  = 'http://localhost:8080/dashboard'
 
 
 #configure the jwt settings and time
@@ -162,3 +176,24 @@ SIMPLE_JWT = {
 }
 
 
+
+
+
+
+#for resiting passwor via email
+
+
+
+# settings.py
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+# YOUR SPECIFIC INFO
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+# zvrv nomx vhlv txyc

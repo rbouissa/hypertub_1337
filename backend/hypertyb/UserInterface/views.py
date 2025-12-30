@@ -391,3 +391,145 @@ class LogoutView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)  # Validate the incoming data
         serializer.save()  # Blacklist the refresh token
         return Response({"message": "Successfully logged out"}, status=status.HTTP_204_NO_CONTENT)
+    
+
+
+
+
+#email authentication 
+class LoginWithGoogle(APIView):
+    def get(self, request):
+        google_auth_url = (
+            "https://accounts.google.com/o/oauth2/v2/auth"
+            f"?client_id={settings.OAUTH_email_CLIENT_ID}"
+            f"&redirect_uri={settings.OAUTH_email_REDIRECT_URI}"
+            "&response_type=code"
+            "&scope=openid email profile"
+        )
+        # return redirect(google_auth_url)
+        return JsonResponse({"url": google_auth_url})
+
+
+# views.py
+import requests
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.conf import settings
+from rest_framework_simplejwt.tokens import RefreshToken
+from .models import Intra42User
+
+
+class GoogleCallback(APIView):
+    """
+    Handle Google OAuth callback
+    """
+    def get(self, request):
+        code = request.GET.get("code")
+
+        if not code:
+            return Response(
+                {"error": "Authorization code not provided"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 1️⃣ Exchange authorization code for access token
+        token_response = requests.post(
+            "https://oauth2.googleapis.com/token",
+            data={
+                "client_id": settings.OAUTH_email_CLIENT_ID,
+                "client_secret": settings.OAUTH_email_CLIENT_SECRET,
+                "code": code,
+                "grant_type": "authorization_code",
+                "redirect_uri": settings.OAUTH_email_REDIRECT_URI,
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+
+        token_data = token_response.json()
+        access_token = token_data.get("access_token")
+
+        if not access_token:
+            return Response(
+                {"error": "Failed to obtain access token"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 2️⃣ Fetch user info from Google
+        user_info_response = requests.get(
+            "https://www.googleapis.com/oauth2/v2/userinfo",
+            headers={
+                "Authorization": f"Bearer {access_token}"
+            },
+        )
+
+        user_info = user_info_response.json()
+
+        email = user_info.get("email")
+        google_id = user_info.get("id")
+
+        if not email:
+            return Response(
+                {"error": "Email not provided by Google"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 3️⃣ Create or get user (email-based)
+        user, created = Intra42User.objects.get_or_create(
+            email=email,
+            defaults={
+                "login": email.split("@")[0],
+                "first_name": user_info.get("given_name", ""),
+                "last_name": user_info.get("family_name", ""),
+                "image": user_info.get("picture", ""),
+                "intra_id": f"google_{google_id}",
+            }
+        )
+
+        # 4️⃣ Generate JWT tokens
+        refresh = RefreshToken.for_user(user)
+
+        # 5️⃣ Return tokens + user info
+        return Response(
+            {
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "user": {
+                    "email": user.email,
+                    "login": user.login,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "image": user.image,
+                }
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+
+
+
+
+
+
+
+
+
+
+
+# from django.contrib.auth import get_user_model
+
+class ChangePasswordView(generics.GenericAPIView):
+    serializer_class = ChangePasswordSerializer
+
+    def put(self, request, id):
+        password = request.data['password']
+        new_password = request.data['new_password']
+
+        obj = Intra42User.objects.get(pk=id)
+        if not obj.check_password(raw_password=password):
+            return Response({'error': 'password not match'}, status=400)
+        else:
+            obj.set_password(new_password)
+            obj.save()
+            return Response({'success': 'password changed successfully'}, status=200)

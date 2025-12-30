@@ -29,7 +29,14 @@ urlpatterns = [
     path('intra42callback/',Intra42Callback.as_view(),name='Intra42Callback'),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token_refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('user_data/', data_user.as_view(),name='data_user'),
     path('logout/',LogoutView.as_view(),name='logout'),
+    path('login_with_google/', LoginWithGoogle.as_view(), name='login_with_google'),
+    path('google_callback/', GoogleCallback.as_view(), name='google_callback'),
+
     # path('delete-cookies/', DeleteCookiesView.as_view(), name='delete_cookies'),
+    #this is for user crud 
+    path('user_data/', data_user.as_view(),name='data_user'),
+    # path('user/profile/', UserProfileView.as_view()),
+    # path('user/language/', UpdateLanguageView.as_view()),
+    path('user/change_password/<int:id>/', ChangePasswordView.as_view()),
 ]
