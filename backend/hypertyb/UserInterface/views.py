@@ -533,3 +533,31 @@ class ChangePasswordView(generics.GenericAPIView):
             obj.set_password(new_password)
             obj.save()
             return Response({'success': 'password changed successfully'}, status=200)
+        
+
+
+
+#view for genereting the random code and send i to the email
+import random
+from django.core.mail import send_mail
+from .models import PasswordResetCode
+
+class RequestPasswordResetView(generics.CreateAPIView):
+    def post(self, request):
+        email=request.data.get('email')
+        try:
+            user = Intra42User.objects.get(email=email)
+            code = str(random.randint(100000, 999999))
+
+            #save code to the database
+            PasswordResetCode.objects.create(user=user, code=code)
+            send_mail(
+                'Password Reset Code',#the subject of email
+                f'Your reset code is: {code}',
+                settings.DEFAULT_FROM_EMAIL,#this is the email sender
+                [email],#this the email you wat to sen to 
+                fail_silently=False
+            )
+            return Response({'message': 'Code sent to email'},status=200)
+        except Intra42User.DoesNotExist:
+            return Response({'error':'USer not found'})

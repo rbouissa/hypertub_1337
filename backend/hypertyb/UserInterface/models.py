@@ -38,3 +38,19 @@ class Intra42User(AbstractUser):
     #     return self.login
 
 
+
+
+
+# models.py
+from django.db import models
+from django.utils import timezone
+import datetime
+
+class PasswordResetCode(models.Model):
+    user = models.ForeignKey(Intra42User, on_delete=models.CASCADE)
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_valid(self):
+        # Code expires after 10 minutes
+        return self.created_at >= timezone.now() - datetime.timedelta(minutes=10)

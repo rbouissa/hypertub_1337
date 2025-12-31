@@ -17,10 +17,10 @@ POST http://localhost:8000/api/signup/
 Content-Type: application/json
 
 {
-  "username": "reda",
+  "username": "Redabouissali422",
   "first_name": "Reda",
   "last_name": "Bouissali",
-  "email": "reda@example.com",
+  "email": "redabouissali422@gmail.com",
   "password": "123"
 }
 
@@ -31,7 +31,7 @@ POST http://localhost:8000/api/login/
 Content-Type: application/json
 
 {
-  "username": "reda",
+  "username": "Redabouissali422",
   "password": "123"
 }
 
@@ -46,4 +46,10 @@ Content-Type: application/json
   "new_password": "newStrongPassword123"
 }
 
+###
+POST http://localhost:8000/api/password-reset/request/
+Content-Type: application/json
 
+{
+  "email": "redabouissali422@gmail.com"
+}
