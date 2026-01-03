@@ -521,7 +521,7 @@ class GoogleCallback(APIView):
 
 class ChangePasswordView(generics.GenericAPIView):
     serializer_class = ChangePasswordSerializer
-
+    permission_classes = [IsAuthenticated]
     def put(self, request, id):
         password = request.data['password']
         new_password = request.data['new_password']
@@ -543,6 +543,7 @@ from django.core.mail import send_mail
 from .models import PasswordResetCode
 
 class RequestPasswordResetView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         email=request.data.get('email')
         try:
@@ -561,3 +562,29 @@ class RequestPasswordResetView(generics.CreateAPIView):
             return Response({'message': 'Code sent to email'},status=200)
         except Intra42User.DoesNotExist:
             return Response({'error':'USer not found'})
+        
+
+
+
+
+
+class ConfirmPasswordResetView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+       code_input = request.data.get('code')
+       new_password = request.data.get('new_password')
+       email= request.data.get('email')
+       try:
+           reset_obj = PasswordResetCode.objects.filter(
+               user__email=email,
+               code=code_input
+           ).latest('created_at')
+           if reset_obj.is_valid():
+               user = reset_obj.user
+               user.set_password(new_password)
+               user.save()
+               reset_obj.delete()
+               return Response({'success': 'Password updated'}, status=200)
+           return Response({'error': 'Code expired'}, status=400)
+       except PasswordResetCode.DoesNotExist:
+           return Response({'error':'Invalide code'}, status=400)

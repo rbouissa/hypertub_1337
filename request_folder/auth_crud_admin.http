@@ -32,7 +32,7 @@ Content-Type: application/json
 
 {
   "username": "Redabouissali422",
-  "password": "123"
+  "password": "new123"
 }
 
 
@@ -52,4 +52,16 @@ Content-Type: application/json
 
 {
   "email": "redabouissali422@gmail.com"
+}
+
+
+###
+POST http://localhost:8000/api/password-reset/confirm/
+Content-Type: application/json
+
+{
+  "code": "177442",
+  "email": "redabouissali422@gmail.com",
+  "new_password":"new123"
+
 }

@@ -42,6 +42,6 @@ urlpatterns = [
 
     #reset password by email code 
     path('password-reset/request/', RequestPasswordResetView.as_view(), name='password_reset_request'),
-    # path('password-reset/confirm/', ConfirmPasswordResetView.as_view(), name='password_reset_confirm'),
+    path('password-reset/confirm/', ConfirmPasswordResetView.as_view(), name='password_reset_confirm'),
 
 ]
