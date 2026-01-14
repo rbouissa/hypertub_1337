@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.contrib.auth.models import User
 from .models import Movie, Subtitle, Comment
+from .video_service import VideoStreamingService
 import json
 
 
@@ -231,3 +232,29 @@ class CommentCreateView(View):
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
         except KeyError as e:
             return JsonResponse({'error': f'Missing required field: {str(e)}'}, status=400)
+
+
+class VideoStreamView(View):
+    def get(self, request, id):
+        """Stream video with format conversion if needed"""
+        video_path, movie = VideoStreamingService.get_video_path(id)
+        
+        if not video_path:
+            return JsonResponse({
+                'error': 'Video not found',
+                'message': f'Video for movie "{movie.name}" has not been downloaded yet',
+                'video_url': movie.video_url
+            }, status=404)
+        
+        if VideoStreamingService.needs_conversion(video_path):
+            converted_path = video_path.parent / 'video.mp4'
+            
+            if not converted_path.exists():
+                success = VideoStreamingService.convert_video(video_path, converted_path)
+                if not success:
+                    return JsonResponse({'error': 'Video conversion failed'}, status=500)
+            
+            video_path = converted_path
+        
+        range_header = request.META.get('HTTP_RANGE')
+        return VideoStreamingService.stream_video(video_path, range_header)

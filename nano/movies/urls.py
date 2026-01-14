@@ -4,13 +4,15 @@ from .views import (
     MovieDetailView,
     CommentListView,
     CommentDetailView,
-    CommentCreateView
+    CommentCreateView,
+    VideoStreamView
 )
 
 urlpatterns = [
     # Movie endpoints
     path('movies/', MovieListView.as_view(), name='movie-list'),
     path('movies/<int:id>/', MovieDetailView.as_view(), name='movie-detail'),
+    path('movies/<int:id>/stream/', VideoStreamView.as_view(), name='video-stream'),
     
     # Comment endpoints
     path('comments/', CommentListView.as_view(), name='comment-list'),
