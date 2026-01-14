@@ -15,7 +15,8 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+import os
+OMDB_API_KEY = os.environ.get('OMDB_API_KEY', '16e87ea8')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -27,6 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 AUTH_USER_MODEL = 'UserInterface.Intra42User'
+
 
 
 # Application definition
@@ -42,6 +44,7 @@ INSTALLED_APPS = ['django.contrib.contenttypes',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'UserInterface',
+    'movies',
 ]
 
 MIDDLEWARE = [

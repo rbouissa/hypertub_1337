@@ -44,4 +44,24 @@ urlpatterns = [
     path('password-reset/request/', RequestPasswordResetView.as_view(), name='password_reset_request'),
     path('password-reset/confirm/', ConfirmPasswordResetView.as_view(), name='password_reset_confirm'),
 
+
+
+
+
+
+
+
+
+
+
+    # #the part of tazi movies
+    # path('movies/', MovieListView.as_view(), name='movie-list'),
+    # path('movies/<int:id>/', MovieDetailView.as_view(), name='movie-detail'),
+    # path('movies/<int:id>/stream/', VideoStreamView.as_view(), name='video-stream'),
+    
+    # # Comment endpoints
+    # path('comments/', CommentListView.as_view(), name='comment-list'),
+    # path('comments/<int:id>/', CommentDetailView.as_view(), name='comment-detail'),
+    # path('movies/<int:movie_id>/comments/', CommentCreateView.as_view(), name='comment-create'),
+
 ]
