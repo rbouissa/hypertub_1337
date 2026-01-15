@@ -27,6 +27,46 @@ class MovieListView(View):
         return JsonResponse(list(movies), safe=False)
 
 
+class MovieSearchView(View):
+    """
+    API endpoint to search movies by name.
+    
+    GET /movies/search/?q=query
+    Returns: [{"id": 1, "name": "Movie Title", "archive_identifier": "...", "imdb_rating": 8.0}, ...]
+    """
+    
+    def get(self, request):
+        """
+        Search movies by name (case-insensitive).
+        Query parameter: q (search query)
+        """
+        query = request.GET.get('q', '').strip()
+        
+        if not query:
+            return JsonResponse({
+                'error': 'Missing search query parameter "q"'
+            }, status=400)
+        
+        # Search movies by name (case-insensitive)
+        movies = Movie.objects.filter(
+            name__icontains=query
+        ).values(
+            'id', 
+            'name', 
+            'archive_identifier',
+            'imdb_id',
+            'imdb_rating',
+            'production_year',
+            'length'
+        )
+        
+        return JsonResponse({
+            'query': query,
+            'count': len(movies),
+            'results': list(movies)
+        }, safe=False)
+
+
 class MovieDetailView(View):
     """
     API endpoint to get detailed information about a specific movie.

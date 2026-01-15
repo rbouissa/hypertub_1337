@@ -2,6 +2,7 @@ from django.urls import path
 from .views import (
     MovieListView, 
     MovieDetailView,
+    MovieSearchView,
     CommentListView,
     CommentDetailView,
     CommentCreateView,
@@ -13,6 +14,7 @@ from .views import (
 urlpatterns = [
     # Movie endpoints
     path('movies/', MovieListView.as_view(), name='movie-list'),
+    path('movies/search/', MovieSearchView.as_view(), name='movie-search'),
     path('movies/<int:id>/', MovieDetailView.as_view(), name='movie-detail'),
     path('movies/<int:id>/stream/', VideoStreamView.as_view(), name='video-stream'),
     

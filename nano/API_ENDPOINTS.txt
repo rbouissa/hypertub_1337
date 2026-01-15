@@ -23,7 +23,34 @@ MOVIE ENDPOINTS
 
 --------------------------------------------------------------------------------
 
-2. GET MOVIE DETAILS
+2. SEARCH MOVIES
+   Method: GET
+   Path: /movies/search/?q=<query>
+   
+   Example:
+   curl "http://localhost:8000/movies/search/?q=friday"
+   curl "http://localhost:8000/movies/search/?q=girl"
+   
+   Response:
+   {
+     "query": "friday",
+     "count": 1,
+     "results": [
+       {
+         "id": 1,
+         "name": "His Girl Friday",
+         "archive_identifier": "His_Girl_Friday",
+         "imdb_id": "tt0032599",
+         "imdb_rating": 8.0,
+         "production_year": 1940,
+         "length": 92
+       }
+     ]
+   }
+
+--------------------------------------------------------------------------------
+
+3. GET MOVIE DETAILS
    Method: GET
    Path: /movies/<id>/
    
@@ -46,7 +73,7 @@ MOVIE ENDPOINTS
 
 --------------------------------------------------------------------------------
 
-3. STREAM VIDEO
+4. STREAM VIDEO
    Method: GET
    Path: /movies/<id>/stream/
    
@@ -61,7 +88,7 @@ MOVIE ENDPOINTS
 COMMENT ENDPOINTS
 ================================================================================
 
-4. LIST ALL COMMENTS
+5. LIST ALL COMMENTS
    Method: GET
    Path: /comments/
    
@@ -82,7 +109,7 @@ COMMENT ENDPOINTS
 
 --------------------------------------------------------------------------------
 
-5. GET COMMENT DETAILS
+6. GET COMMENT DETAILS
    Method: GET
    Path: /comments/<id>/
    
@@ -102,7 +129,7 @@ COMMENT ENDPOINTS
 
 --------------------------------------------------------------------------------
 
-6. CREATE COMMENT
+7. CREATE COMMENT
    Method: POST
    Path: /movies/<movie_id>/comments/
    
@@ -129,7 +156,7 @@ COMMENT ENDPOINTS
 
 --------------------------------------------------------------------------------
 
-7. UPDATE COMMENT
+8. UPDATE COMMENT
    Method: PATCH
    Path: /comments/<id>/
    
@@ -155,7 +182,7 @@ COMMENT ENDPOINTS
 
 --------------------------------------------------------------------------------
 
-8. DELETE COMMENT
+9. DELETE COMMENT
    Method: DELETE
    Path: /comments/<id>/
    
@@ -173,7 +200,7 @@ COMMENT ENDPOINTS
 SUBTITLE ENDPOINTS
 ================================================================================
 
-9. ADD SUBTITLE TO MOVIE
+10. ADD SUBTITLE TO MOVIE
    Method: POST
    Path: /movies/<movie_id>/subtitles/
    
@@ -198,7 +225,7 @@ SUBTITLE ENDPOINTS
 
 --------------------------------------------------------------------------------
 
-10. AUTO-FETCH SUBTITLES FROM ARCHIVE.ORG
+11. AUTO-FETCH SUBTITLES FROM ARCHIVE.ORG
     Method: POST
     Path: /movies/<movie_id>/subtitles/auto-fetch/
     
@@ -246,22 +273,25 @@ echo "=========================================="
 echo -e "\n1. List all movies:"
 curl -s $BASE_URL/movies/ | python3 -m json.tool
 
-echo -e "\n2. Get movie details (ID=1):"
+echo -e "\n2. Search movies:"
+curl -s "$BASE_URL/movies/search/?q=friday" | python3 -m json.tool
+
+echo -e "\n3. Get movie details (ID=1):"
 curl -s $BASE_URL/movies/1/ | python3 -m json.tool
 
-echo -e "\n3. Create a comment:"
+echo -e "\n4. Create a comment:"
 curl -s -X POST $BASE_URL/movies/1/comments/ \
   -H "Content-Type: application/json" \
-  -d '{"comment": "Test comment from API test", "username": "tester"}' \
-  | python3 -m json.tool
+  -d '{"com5. List all comments:"
+curl -s $BASE_URL/comments/ | python3 -m json.tool
 
-echo -e "\n4. List all comments:"
+echo -e "\n6. List all comments:"
 curl -s $BASE_URL/comments/ | python3 -m json.tool
 
 echo -e "\n5. Add subtitle:"
 curl -s -X POST $BASE_URL/movies/1/subtitles/ \
   -H "Content-Type: application/json" \
-  -d '{"language": "Spanish"}' \
+  -d '{"lan7uage": "Spanish"}' \
   | python3 -m json.tool
 
 echo -e "\n6. Auto-fetch subtitles from Archive.org:"
