@@ -1,0 +1,286 @@
+================================================================================
+                        API ENDPOINTS DOCUMENTATION
+================================================================================
+
+BASE URL: http://localhost:8000
+
+================================================================================
+MOVIE ENDPOINTS
+================================================================================
+
+1. LIST ALL MOVIES
+   Method: GET
+   Path: /movies/
+   
+   Example:
+   curl http://localhost:8000/movies/
+   
+   Response:
+   [
+     {"id": 1, "name": "Movie Title"},
+     {"id": 2, "name": "Another Movie"}
+   ]
+
+--------------------------------------------------------------------------------
+
+2. GET MOVIE DETAILS
+   Method: GET
+   Path: /movies/<id>/
+   
+   Example:
+   curl http://localhost:8000/movies/1/
+   
+   Response:
+   {
+     "id": 1,
+     "name": "His Girl Friday",
+     "archive_identifier": "His_Girl_Friday",
+     "imdb_id": "tt0032599",
+     "imdb_rating": 8.0,
+     "production_year": 1940,
+     "length": 92,
+     "video_url": "https://archive.org/...",
+     "available_subtitles": ["English", "Arabic"],
+     "number_of_comments": 5
+   }
+
+--------------------------------------------------------------------------------
+
+3. STREAM VIDEO
+   Method: GET
+   Path: /movies/<id>/stream/
+   
+   Example:
+   curl http://localhost:8000/movies/1/stream/
+   
+   # With range header for partial content
+   curl -H "Range: bytes=0-1023" http://localhost:8000/movies/1/stream/
+
+
+================================================================================
+COMMENT ENDPOINTS
+================================================================================
+
+4. LIST ALL COMMENTS
+   Method: GET
+   Path: /comments/
+   
+   Example:
+   curl http://localhost:8000/comments/
+   
+   Response:
+   [
+     {
+       "id": 1,
+       "author_username": "user1",
+       "date": "2026-01-14T12:00:00Z",
+       "content": "Great movie!",
+       "movie_id": 5,
+       "movie_name": "His Girl Friday"
+     }
+   ]
+
+--------------------------------------------------------------------------------
+
+5. GET COMMENT DETAILS
+   Method: GET
+   Path: /comments/<id>/
+   
+   Example:
+   curl http://localhost:8000/comments/1/
+   
+   Response:
+   {
+     "id": 1,
+     "comment_id": 1,
+     "author_username": "user1",
+     "date": "2026-01-14T12:00:00Z",
+     "content": "Great movie!",
+     "movie_id": 5,
+     "movie_name": "His Girl Friday"
+   }
+
+--------------------------------------------------------------------------------
+
+6. CREATE COMMENT
+   Method: POST
+   Path: /movies/<movie_id>/comments/
+   
+   Example:
+   curl -X POST http://localhost:8000/movies/1/comments/ \
+     -H "Content-Type: application/json" \
+     -d '{"comment": "Amazing classic film!", "username": "john_doe"}'
+   
+   Request Body:
+   {
+     "comment": "Amazing classic film!",
+     "username": "john_doe"
+   }
+   
+   Response:
+   {
+     "id": 2,
+     "author_username": "john_doe",
+     "date": "2026-01-15T10:30:00Z",
+     "content": "Amazing classic film!",
+     "movie_id": 1,
+     "message": "Comment created successfully"
+   }
+
+--------------------------------------------------------------------------------
+
+7. UPDATE COMMENT
+   Method: PATCH
+   Path: /comments/<id>/
+   
+   Example:
+   curl -X PATCH http://localhost:8000/comments/1/ \
+     -H "Content-Type: application/json" \
+     -d '{"comment": "Updated comment text", "username": "john_doe"}'
+   
+   Request Body:
+   {
+     "comment": "Updated comment text",
+     "username": "john_doe"
+   }
+   
+   Response:
+   {
+     "id": 1,
+     "content": "Updated comment text",
+     "author_username": "john_doe",
+     "date": "2026-01-14T12:00:00Z",
+     "message": "Comment updated successfully"
+   }
+
+--------------------------------------------------------------------------------
+
+8. DELETE COMMENT
+   Method: DELETE
+   Path: /comments/<id>/
+   
+   Example:
+   curl -X DELETE http://localhost:8000/comments/1/
+   
+   Response:
+   {
+     "message": "Comment deleted successfully",
+     "id": 1
+   }
+
+
+================================================================================
+SUBTITLE ENDPOINTS
+================================================================================
+
+9. ADD SUBTITLE TO MOVIE
+   Method: POST
+   Path: /movies/<movie_id>/subtitles/
+   
+   Example:
+   curl -X POST http://localhost:8000/movies/1/subtitles/ \
+     -H "Content-Type: application/json" \
+     -d '{"language": "French"}'
+   
+   Request Body:
+   {
+     "language": "French"
+   }
+   
+   Response:
+   {
+     "id": 3,
+     "movie_id": 1,
+     "movie_name": "His Girl Friday",
+     "language": "French",
+     "created_at": "2026-01-15T10:30:00Z"
+   }
+
+--------------------------------------------------------------------------------
+
+10. AUTO-FETCH SUBTITLES FROM ARCHIVE.ORG
+    Method: POST
+    Path: /movies/<movie_id>/subtitles/auto-fetch/
+    
+    Example:
+    curl -X POST http://localhost:8000/movies/1/subtitles/auto-fetch/
+    
+    Response:
+    {
+      "movie_id": 1,
+      "movie_name": "His Girl Friday",
+      "archive_identifier": "His_Girl_Friday",
+      "subtitles_found": 2,
+      "subtitles": [
+        {
+          "id": 1,
+          "language": "English",
+          "url": "https://archive.org/...",
+          "format": "srt",
+          "status": "created"
+        },
+        {
+          "id": 2,
+          "language": "العربية",
+          "url": "https://archive.org/...",
+          "format": "vtt",
+          "status": "already_exists"
+        }
+      ]
+    }
+
+
+================================================================================
+QUICK TEST SCRIPT
+================================================================================
+
+Save this as test_api.sh and run with: bash test_api.sh
+
+#!/bin/bash
+BASE_URL="http://localhost:8000"
+
+echo "=========================================="
+echo "Testing API Endpoints"
+echo "=========================================="
+
+echo -e "\n1. List all movies:"
+curl -s $BASE_URL/movies/ | python3 -m json.tool
+
+echo -e "\n2. Get movie details (ID=1):"
+curl -s $BASE_URL/movies/1/ | python3 -m json.tool
+
+echo -e "\n3. Create a comment:"
+curl -s -X POST $BASE_URL/movies/1/comments/ \
+  -H "Content-Type: application/json" \
+  -d '{"comment": "Test comment from API test", "username": "tester"}' \
+  | python3 -m json.tool
+
+echo -e "\n4. List all comments:"
+curl -s $BASE_URL/comments/ | python3 -m json.tool
+
+echo -e "\n5. Add subtitle:"
+curl -s -X POST $BASE_URL/movies/1/subtitles/ \
+  -H "Content-Type: application/json" \
+  -d '{"language": "Spanish"}' \
+  | python3 -m json.tool
+
+echo -e "\n6. Auto-fetch subtitles from Archive.org:"
+curl -s -X POST $BASE_URL/movies/1/subtitles/auto-fetch/ \
+  | python3 -m json.tool
+
+echo -e "\n=========================================="
+echo "Tests completed!"
+echo "=========================================="
+
+
+================================================================================
+NOTES
+================================================================================
+
+- All endpoints are CSRF exempt for testing purposes
+- Comments are created with auto-generated users if username doesn't exist
+- Video streaming supports range requests for partial content delivery
+- Auto-fetch subtitles only works for movies with valid archive_identifier
+- Server must be running: python manage.py runserver
+
+================================================================================

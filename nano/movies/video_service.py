@@ -1,6 +1,7 @@
 import os
 import subprocess
 import mimetypes
+import requests
 from django.http import StreamingHttpResponse, FileResponse, Http404
 from django.shortcuts import get_object_or_404
 from pathlib import Path
@@ -29,6 +30,41 @@ class VideoStreamingService:
                 return video_file, movie
         
         return None, movie
+    
+    @staticmethod
+    def stream_from_url(video_url, range_header=None):
+        """Stream video directly from remote URL without downloading"""
+        try:
+            headers = {}
+            if range_header:
+                headers['Range'] = range_header
+            
+            response = requests.get(video_url, headers=headers, stream=True, timeout=10)
+            
+            def video_iterator():
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        yield chunk
+            
+            django_response = StreamingHttpResponse(
+                video_iterator(),
+                status=206 if range_header else 200,
+                content_type=response.headers.get('Content-Type', 'video/mp4')
+            )
+            
+            if 'Content-Length' in response.headers:
+                django_response['Content-Length'] = response.headers['Content-Length']
+            if 'Content-Range' in response.headers:
+                django_response['Content-Range'] = response.headers['Content-Range']
+            
+            django_response['Accept-Ranges'] = 'bytes'
+            
+            return django_response
+            
+        except Exception as e:
+            print(f"Streaming error: {e}")
+            from django.http import JsonResponse
+            return JsonResponse({'error': 'Video streaming failed'}, status=500)
     
     @staticmethod
     def needs_conversion(file_path):

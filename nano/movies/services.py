@@ -101,6 +101,53 @@ class ArchiveOrgService:
             print(f"Error fetching metadata for {identifier}: {e}")
             return None
 
+    @staticmethod
+    def get_subtitles(identifier: str) -> List[Dict]:
+        """
+        Get available subtitles for an Archive.org item.
+        
+        Args:
+            identifier: Archive.org identifier
+            
+        Returns:
+            List of subtitle info: [
+                {"language": "English", "url": "...", "format": "srt"},
+                {"language": "Arabic", "url": "...", "format": "vtt"}
+            ]
+        """
+        metadata = ArchiveOrgService.get_metadata(identifier)
+        if not metadata:
+            return []
+        
+        files = metadata.get('files', [])
+        subtitles = []
+        
+        for file in files:
+            name = file.get('name', '').lower()
+            format_type = file.get('format', '').lower()
+            
+            if format_type in ['subrip', 'webvtt'] or name.endswith(('.srt', '.vtt', '.sub')):
+                language = 'Unknown'
+                if '_en' in name or 'english' in name:
+                    language = 'English'
+                elif '_ar' in name or 'arabic' in name:
+                    language = 'العربية'
+                elif '_fr' in name or 'french' in name:
+                    language = 'Français'
+                elif '_es' in name or 'spanish' in name:
+                    language = 'Español'
+                
+                subtitle_format = 'srt' if name.endswith('.srt') else 'vtt' if name.endswith('.vtt') else 'sub'
+                
+                subtitles.append({
+                    'language': language,
+                    'url': f"{ArchiveOrgService.BASE_URL}/download/{identifier}/{file.get('name')}",
+                    'format': subtitle_format,
+                    'filename': file.get('name')
+                })
+        
+        return subtitles
+
 
 class OMDbService:
     """
