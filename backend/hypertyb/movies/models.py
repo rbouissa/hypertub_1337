@@ -48,7 +48,6 @@ class Subtitle(models.Model):
     def __str__(self):
         return f"{self.movie.name} - {self.language}"
 
-
 class Comment(models.Model):
     """
     Comment model representing user comments on movies.

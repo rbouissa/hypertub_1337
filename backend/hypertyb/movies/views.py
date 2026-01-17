@@ -9,8 +9,8 @@ from .models import Movie, Subtitle, Comment
 from .video_service import VideoStreamingService
 import json
 from django.contrib.auth import get_user_model # <--- reda add this to tazi code
-
-
+from .services import ArchiveOrgService
+from rest_framework.permissions import IsAuthenticated
 
 class MovieListView(View):
     """
@@ -310,16 +310,17 @@ class CommentCreateView(View):
 
 class VideoStreamView(View):
     def get(self, request, id):
-        permission_classes = [IsAuthenticated]
         """Stream video with format conversion if needed"""
         video_path, movie = VideoStreamingService.get_video_path(id)
         
         if not video_path:
-            return JsonResponse({
-                'error': 'Video not found',
-                'message': f'Video for movie "{movie.name}" has not been downloaded yet',
-                'video_url': movie.video_url
-            }, status=404)
+            if not movie.video_url:
+                return JsonResponse({
+                    'error': 'Video not available',
+                    'message': f'No video URL for "{movie.name}"'
+                }, status=404)
+            
+            return VideoStreamingService.stream_from_url(movie.video_url, request.META.get('HTTP_RANGE'))
         
         if VideoStreamingService.needs_conversion(video_path):
             converted_path = video_path.parent / 'video.mp4'
@@ -333,3 +334,120 @@ class VideoStreamView(View):
         
         range_header = request.META.get('HTTP_RANGE')
         return VideoStreamingService.stream_video(video_path, range_header)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class SubtitleCreateView(View):
+    """
+    API endpoint to add subtitle to a movie.
+    
+    POST /movies/<movie_id>/subtitles/
+    Body: {"language": "English"}
+    Returns: {
+        "id": 1,
+        "movie_id": 5,
+        "movie_name": "His Girl Friday",
+        "language": "English",
+        "created_at": "2026-01-15T10:30:00Z"
+    }
+    """
+    
+    def post(self, request, movie_id):
+        try:
+            data = json.loads(request.body)
+            language = data['language']
+            
+            movie = get_object_or_404(Movie, id=movie_id)
+            
+            subtitle = Subtitle.objects.create(
+                movie=movie,
+                language=language
+            )
+            
+            return JsonResponse({
+                'id': subtitle.id,
+                'movie_id': movie.id,
+                'movie_name': movie.name,
+                'language': subtitle.language,
+                'created_at': subtitle.created_at.isoformat()
+            }, status=201)
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except KeyError:
+            return JsonResponse({'error': 'Missing required field: language'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class SubtitleAutoFetchView(View):
+    """
+    API endpoint to automatically fetch subtitles from Archive.org.
+    
+    POST /movies/<movie_id>/subtitles/auto-fetch/
+    Returns: {
+        "movie_id": 7,
+        "movie_name": "His Girl Friday",
+        "subtitles_found": 2,
+        "subtitles": [
+            {"language": "English", "url": "...", "format": "srt"},
+            {"language": "العربية", "url": "...", "format": "vtt"}
+        ]
+    }
+    """
+    
+    def post(self, request, movie_id):
+        try:
+            movie = get_object_or_404(Movie, id=movie_id)
+            
+            if not movie.archive_identifier:
+                return JsonResponse({
+                    'error': 'No Archive.org identifier for this movie'
+                }, status=400)
+            
+            subtitles_data = ArchiveOrgService.get_subtitles(movie.archive_identifier)
+            
+            if not subtitles_data:
+                return JsonResponse({
+                    'message': 'No subtitles found on Archive.org',
+                    'movie_id': movie.id,
+                    'movie_name': movie.name
+                }, status=200)
+            
+            created_subtitles = []
+            for sub_data in subtitles_data:
+                subtitle, created = Subtitle.objects.get_or_create(
+                    movie=movie,
+                    language=sub_data['language']
+                )
+                created_subtitles.append({
+                    'id': subtitle.id,
+                    'language': subtitle.language,
+                    'url': sub_data['url'],
+                    'format': sub_data['format'],
+                    'status': 'created' if created else 'already_exists'
+                })
+            
+            return JsonResponse({
+                'movie_id': movie.id,
+                'movie_name': movie.name,
+                'archive_identifier': movie.archive_identifier,
+                'subtitles_found': len(subtitles_data),
+                'subtitles': created_subtitles
+            }, status=201)
+            
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)

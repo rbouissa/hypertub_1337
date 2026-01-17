@@ -5,7 +5,9 @@ from .views import (
     CommentListView,
     CommentDetailView,
     CommentCreateView,
-    VideoStreamView
+    VideoStreamView,
+    SubtitleAutoFetchView,
+    SubtitleCreateView
 )
 
 urlpatterns = [
@@ -18,6 +20,11 @@ urlpatterns = [
     path('comments/', CommentListView.as_view(), name='comment-list'),
     path('comments/<int:id>/', CommentDetailView.as_view(), name='comment-detail'),
     path('movies/<int:movie_id>/comments/', CommentCreateView.as_view(), name='comment-create'),
+
+
+    #subtitle endpoint 
+    path('movies/<int:movie_id>/subtitles/', SubtitleCreateView.as_view(), name='subtitle-create'),
+    path('movies/<int:movie_id>/subtitles/auto-fetch/', SubtitleAutoFetchView.as_view(), name='subtitle-auto-fetch'),
 ]
 
 
