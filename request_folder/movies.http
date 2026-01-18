@@ -1,0 +1,48 @@
+@baseUrl = http://localhost:8000/api
+@authToken = YOUR_ACCESS_TOKEN_HERE
+
+### Get all movies
+GET {{baseUrl}}/movies/
+Accept: application/json
+
+### Get a single movie by ID
+# Replace <id> with an actual movie ID (e.g., 1)
+GET {{baseUrl}}/movies/1/
+Accept: application/json
+
+### Stream a movie video
+GET {{baseUrl}}/movies/1/stream/
+Authorization: Bearer {{authToken}}
+
+### Get all comments
+GET {{baseUrl}}/comments/
+Accept: application/json
+
+### Get a single comment by ID
+GET {{baseUrl}}/comments/1/
+Accept: application/json
+
+### Create a comment for a specific movie
+# This uses the <int:movie_id> pattern from your URLs
+### Create a comment for Movie ID 1
+POST {{baseUrl}}/movies/1/comments/
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "username": "Marouane",
+    "comment": "This movie was fantastic! The cinematography was top-notch."
+}
+### Update a comment (Assuming DetailView supports PUT/PATCH)
+PUT {{baseUrl}}/comments/1/
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "content": "Updated my review: It was actually just okay.",
+    "rating": 3
+}
+
+### Delete a comment
+DELETE {{baseUrl}}/comments/1/
+Authorization: Bearer {{authToken}}
