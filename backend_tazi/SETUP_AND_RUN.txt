@@ -1,0 +1,256 @@
+═══════════════════════════════════════════════════════════════════════
+    HYPERTUBE BACKEND - DJANGO SETUP & RUN COMMANDS
+═══════════════════════════════════════════════════════════════════════
+
+📋 PROJECT INFO:
+- Framework: Django 5.0.1
+- Database: SQLite
+- APIs: Archive.org + OMDb
+- OMDb API Key: 16e87ea8
+
+
+═══════════════════════════════════════════════════════════════════════
+1. INITIAL SETUP (First Time Only)
+═══════════════════════════════════════════════════════════════════════
+
+# Navigate to project
+cd /Users/devops/Desktop/nano
+
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Set environment variable for OMDb API key
+export OMDB_API_KEY='16e87ea8'
+
+
+═══════════════════════════════════════════════════════════════════════
+2. DATABASE SETUP
+═══════════════════════════════════════════════════════════════════════
+
+# Create database migrations
+python manage.py makemigrations
+python manage.py makemigrations movies
+
+# Apply migrations (create tables)
+python manage.py migrate
+
+# Create admin user (username: admin, password: admin)
+python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='admin').delete(); User.objects.create_superuser('admin', 'admin@example.com', 'admin'); print('Admin created successfully')"
+
+
+═══════════════════════════════════════════════════════════════════════
+3. POPULATE DATABASE WITH MOVIES
+═══════════════════════════════════════════════════════════════════════
+
+# Fetch 20 movies from Archive.org with OMDb ratings
+python manage.py populate_movies --limit 20
+
+# For more movies (optional)
+python manage.py populate_movies --limit 50
+
+# Skip existing movies
+python manage.py populate_movies --limit 20 --skip-existing
+
+
+═══════════════════════════════════════════════════════════════════════
+4. RUN DEVELOPMENT SERVER
+═══════════════════════════════════════════════════════════════════════
+
+# Start server on default port (8000)
+python manage.py runserver
+
+# Start on specific port
+python manage.py runserver 8000
+
+# Allow external access
+python manage.py runserver 0.0.0.0:8000
+
+
+═══════════════════════════════════════════════════════════════════════
+5. QUICK START (All Commands in One)
+═══════════════════════════════════════════════════════════════════════
+
+cd /Users/devops/Desktop/nano && \
+export OMDB_API_KEY='16e87ea8' && \
+pip install -r requirements.txt && \
+python manage.py makemigrations movies && \
+python manage.py migrate && \
+python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='admin').delete(); User.objects.create_superuser('admin', 'admin@example.com', 'admin')" && \
+python manage.py populate_movies --limit 20 && \
+python manage.py runserver
+
+
+═══════════════════════════════════════════════════════════════════════
+6. API ENDPOINTS
+═══════════════════════════════════════════════════════════════════════
+
+MOVIES:
+-------
+GET    http://localhost:8000/movies/
+GET    http://localhost:8000/movies/7/
+GET    http://localhost:8000/movies/7/stream/
+
+COMMENTS:
+---------
+GET    http://localhost:8000/comments/
+GET    http://localhost:8000/comments/1/
+POST   http://localhost:8000/movies/7/comments/
+PATCH  http://localhost:8000/comments/1/
+DELETE http://localhost:8000/comments/1/
+
+ADMIN:
+------
+http://localhost:8000/admin/
+Username: admin
+Password: admin
+
+
+═══════════════════════════════════════════════════════════════════════
+7. TEST ENDPOINTS (CURL Commands)
+═══════════════════════════════════════════════════════════════════════
+
+# Get all movies
+curl http://localhost:8000/movies/
+
+# Get movie details
+curl http://localhost:8000/movies/7/
+
+# Get all comments
+curl http://localhost:8000/comments/
+
+# Create a comment
+curl -X POST http://localhost:8000/movies/7/comments/ \
+  -H "Content-Type: application/json" \
+  -d '{"comment": "Great movie!", "username": "testuser"}'
+
+# Update a comment
+curl -X PATCH http://localhost:8000/comments/1/ \
+  -H "Content-Type: application/json" \
+  -d '{"comment": "Updated!", "username": "testuser"}'
+
+# Delete a comment
+curl -X DELETE http://localhost:8000/comments/1/
+
+# Stream video (download test)
+curl http://localhost:8000/movies/7/stream/ --output test.mp4
+
+
+═══════════════════════════════════════════════════════════════════════
+8. USEFUL MANAGEMENT COMMANDS
+═══════════════════════════════════════════════════════════════════════
+
+# Open Django shell
+python manage.py shell
+
+# Check migrations status
+python manage.py showmigrations
+
+# Create superuser manually
+python manage.py createsuperuser
+
+# Reset database (delete all data)
+python manage.py flush
+
+# Check for project issues
+python manage.py check
+
+# Run tests
+python manage.py test
+
+
+═══════════════════════════════════════════════════════════════════════
+9. OPTIONAL - VIDEO STREAMING SETUP
+═══════════════════════════════════════════════════════════════════════
+
+# Install ffmpeg for video format conversion (macOS)
+brew install ffmpeg
+
+# Install ffmpeg (Ubuntu/Debian)
+# apt install ffmpeg
+
+# Create media directory for video storage
+mkdir -p media/videos
+
+
+═══════════════════════════════════════════════════════════════════════
+10. DOCKER (Optional)
+═══════════════════════════════════════════════════════════════════════
+
+# Build Docker image
+docker build -t hypertube-backend .
+
+# Run container
+docker run -p 8000:8000 hypertube-backend
+
+# Using docker-compose
+docker-compose up
+
+# Run in background
+docker-compose up -d
+
+
+═══════════════════════════════════════════════════════════════════════
+11. PROJECT STRUCTURE
+═══════════════════════════════════════════════════════════════════════
+
+nano/
+├── config/              # Django settings
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+├── movies/              # Main app
+│   ├── models.py        # Database models
+│   ├── services.py      # Archive.org + OMDb API
+│   ├── views.py         # API endpoints
+│   ├── urls.py          # URL routing
+│   ├── video_service.py # Video streaming
+│   ├── admin.py         # Admin panel
+│   └── management/
+│       └── commands/
+│           └── populate_movies.py
+├── media/videos/        # Video storage
+├── db.sqlite3           # Database
+├── manage.py            # Django CLI
+└── requirements.txt     # Dependencies
+
+
+═══════════════════════════════════════════════════════════════════════
+12. TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════════
+
+Problem: Port already in use
+Solution: python manage.py runserver 8001
+
+Problem: OMDb API not working
+Solution: export OMDB_API_KEY='16e87ea8'
+
+Problem: No movies in database
+Solution: python manage.py populate_movies --limit 20
+
+Problem: Admin login not working
+Solution: Recreate admin user with shell command above
+
+Problem: Database locked
+Solution: Close all connections and restart server
+
+
+═══════════════════════════════════════════════════════════════════════
+13. PRODUCTION DEPLOYMENT (Future)
+═══════════════════════════════════════════════════════════════════════
+
+# Collect static files
+python manage.py collectstatic
+
+# Use production server (gunicorn)
+pip install gunicorn
+gunicorn config.wsgi:application --bind 0.0.0.0:8000
+
+# Set DEBUG=False in config/settings.py
+# Add proper ALLOWED_HOSTS
+# Use PostgreSQL instead of SQLite
+# Set up proper secret key
+
+
+═══════════════════════════════════════════════════════════════════════
+END OF SETUP GUIDE
+═══════════════════════════════════════════════════════════════════════
