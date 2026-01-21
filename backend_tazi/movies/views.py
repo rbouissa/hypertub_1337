@@ -108,6 +108,8 @@ class MovieDetailView(View):
             'archive_identifier': movie.archive_identifier,
             'imdb_id': movie.imdb_id,
             'imdb_rating': float(movie.imdb_rating) if movie.imdb_rating else None,
+            'img_url': movie.imdb_poster_url,
+            'genre': movie.genre,
             'production_year': movie.production_year,
             'length': movie.length,
             'video_url': movie.video_url,

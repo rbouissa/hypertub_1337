@@ -46,8 +46,9 @@ class Command(BaseCommand):
             
             self.stdout.write(f'\n[{idx}/{len(archive_movies)}] Processing: {title}')
             
-            # Check if movie already exists
-            if skip_existing and Movie.objects.filter(archive_identifier=identifier).exists():
+            # Check if movie already exists - but don't skip, just note it
+            existing_movie = Movie.objects.filter(archive_identifier=identifier).first()
+            if skip_existing and existing_movie:
                 self.stdout.write(self.style.WARNING(f'  Skipping (already exists)'))
                 skipped_count += 1
                 continue
@@ -66,16 +67,23 @@ class Command(BaseCommand):
                 
                 # Try to get OMDb data
                 omdb_data = None
-                if title and title != 'Unknown':
-                    self.stdout.write('  Fetching OMDb data...')
+                if existing_movie and existing_movie.imdb_id:
+                    # If we have an IMDB ID, use it directly (more reliable)
+                    self.stdout.write(f'  Fetching OMDb data using IMDB ID: {existing_movie.imdb_id}...')
+                    omdb_data = OMDbService.get_movie_by_imdb_id(existing_movie.imdb_id)
+                    time.sleep(0.5)
+                elif title and title != 'Unknown':
+                    # Otherwise try by title
+                    self.stdout.write('  Fetching OMDb data by title...')
                     omdb_data = OMDbService.get_movie_by_title(title, year)
-                    # Small delay to respect API rate limits
                     time.sleep(0.5)
                 
                 # Extract OMDb fields
                 imdb_id = None
                 imdb_rating = None
                 runtime_minutes = None
+                poster_url = None
+                genre = None
                 
                 if omdb_data:
                     imdb_id = omdb_data.get('imdbID')
@@ -87,6 +95,16 @@ class Command(BaseCommand):
                             imdb_rating = float(rating_str)
                         except ValueError:
                             pass
+                    
+                    # Get poster URL
+                    poster = omdb_data.get('Poster')
+                    if poster and poster != 'N/A':
+                        poster_url = poster
+                    
+                    # Get genre
+                    genre_str = omdb_data.get('Genre')
+                    if genre_str and genre_str != 'N/A':
+                        genre = genre_str
                     
                     # Parse runtime (e.g., "120 min" -> 120)
                     runtime_str = omdb_data.get('Runtime', '')
@@ -125,6 +143,8 @@ class Command(BaseCommand):
                         'name': title,
                         'imdb_id': imdb_id,
                         'imdb_rating': imdb_rating,
+                        'imdb_poster_url': poster_url,
+                        'genre': genre,
                         'production_year': year,
                         'length': runtime_minutes,
                         'video_url': video_url,

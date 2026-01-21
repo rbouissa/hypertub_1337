@@ -10,6 +10,8 @@ class Movie(models.Model):
     archive_identifier = models.CharField(max_length=255, unique=True)
     imdb_id = models.CharField(max_length=50, blank=True, null=True)
     imdb_rating = models.DecimalField(max_digits=3, decimal_places=1, blank=True, null=True)
+    imdb_poster_url = models.URLField(max_length=500, blank=True, null=True)
+    genre = models.CharField(max_length=255, blank=True, null=True)
     production_year = models.IntegerField(blank=True, null=True)
     length = models.IntegerField(help_text="Length in minutes", blank=True, null=True)
     video_url = models.URLField(max_length=500, blank=True, null=True)
