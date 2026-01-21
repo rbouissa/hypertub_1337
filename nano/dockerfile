@@ -8,7 +8,7 @@ ENV OMDB_API_KEY=16e87ea8
 # Set work directory
 WORKDIR /app
 
-# Install dependencies
+# Install ddfkjhkfdhkdhkjhdff
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
