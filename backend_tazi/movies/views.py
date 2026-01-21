@@ -121,6 +121,149 @@ class MovieDetailView(View):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
+class MovieCreateView(View):
+    """
+    API endpoint to create a new movie.
+    
+    POST /movies/create/
+    Body: {
+        "name": "Movie Title",
+        "archive_identifier": "unique_id",
+        "imdb_id": "tt1234567",
+        "imdb_rating": 7.5,
+        "img_url": "https://...",
+        "genre": "Action, Drama",
+        "production_year": 2020,
+        "length": 120,
+        "video_url": "https://..."
+    }
+    """
+    
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            
+            # Validate required fields
+            if not data.get('name'):
+                return JsonResponse({'error': 'Movie name is required'}, status=400)
+            
+            if not data.get('archive_identifier'):
+                return JsonResponse({'error': 'Archive identifier is required'}, status=400)
+            
+            # Check if movie with same archive_identifier already exists
+            if Movie.objects.filter(archive_identifier=data['archive_identifier']).exists():
+                return JsonResponse({'error': 'Movie with this archive identifier already exists'}, status=400)
+            
+            # Create movie
+            movie = Movie.objects.create(
+                name=data['name'],
+                archive_identifier=data['archive_identifier'],
+                imdb_id=data.get('imdb_id'),
+                imdb_rating=data.get('imdb_rating'),
+                imdb_poster_url=data.get('img_url'),
+                genre=data.get('genre'),
+                production_year=data.get('production_year'),
+                length=data.get('length'),
+                video_url=data.get('video_url')
+            )
+            
+            return JsonResponse({
+                'id': movie.id,
+                'name': movie.name,
+                'archive_identifier': movie.archive_identifier,
+                'message': 'Movie created successfully'
+            }, status=201)
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class MovieUpdateView(View):
+    """
+    API endpoint to update an existing movie.
+    
+    PUT/PATCH /movies/<id>/update/
+    Body: {
+        "name": "Updated Title",
+        "imdb_rating": 8.0,
+        ...
+    }
+    """
+    
+    def put(self, request, id):
+        return self._update(request, id)
+    
+    def patch(self, request, id):
+        return self._update(request, id)
+    
+    def _update(self, request, id):
+        try:
+            movie = get_object_or_404(Movie, id=id)
+            data = json.loads(request.body)
+            
+            # Update fields if provided
+            if 'name' in data:
+                movie.name = data['name']
+            if 'archive_identifier' in data:
+                # Check if new identifier already exists for another movie
+                if Movie.objects.filter(archive_identifier=data['archive_identifier']).exclude(id=id).exists():
+                    return JsonResponse({'error': 'Archive identifier already exists'}, status=400)
+                movie.archive_identifier = data['archive_identifier']
+            if 'imdb_id' in data:
+                movie.imdb_id = data['imdb_id']
+            if 'imdb_rating' in data:
+                movie.imdb_rating = data['imdb_rating']
+            if 'img_url' in data:
+                movie.imdb_poster_url = data['img_url']
+            if 'genre' in data:
+                movie.genre = data['genre']
+            if 'production_year' in data:
+                movie.production_year = data['production_year']
+            if 'length' in data:
+                movie.length = data['length']
+            if 'video_url' in data:
+                movie.video_url = data['video_url']
+            
+            movie.save()
+            
+            return JsonResponse({
+                'id': movie.id,
+                'name': movie.name,
+                'message': 'Movie updated successfully'
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class MovieDeleteView(View):
+    """
+    API endpoint to delete a movie.
+    
+    DELETE /movies/<id>/delete/
+    """
+    
+    def delete(self, request, id):
+        try:
+            movie = get_object_or_404(Movie, id=id)
+            movie_name = movie.name
+            movie.delete()
+            
+            return JsonResponse({
+                'message': f'Movie "{movie_name}" deleted successfully'
+            })
+            
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
 class CommentListView(View):
     """
     API endpoint to list all comments.

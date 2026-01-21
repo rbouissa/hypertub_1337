@@ -64,6 +64,8 @@ MOVIE ENDPOINTS
      "archive_identifier": "His_Girl_Friday",
      "imdb_id": "tt0032599",
      "imdb_rating": 8.0,
+     "img_url": "https://m.media-amazon.com/images/...",
+     "genre": "Comedy, Drama, Romance",
      "production_year": 1940,
      "length": 92,
      "video_url": "https://archive.org/...",
@@ -73,7 +75,72 @@ MOVIE ENDPOINTS
 
 --------------------------------------------------------------------------------
 
-4. STREAM VIDEO
+4. CREATE MOVIE
+   Method: POST
+   Path: /movies/create/
+   
+   Example:
+   curl -X POST http://localhost:8000/movies/create/ \
+     -H "Content-Type: application/json" \
+     -d '{
+       "name": "New Movie",
+       "archive_identifier": "new_movie_2024",
+       "imdb_id": "tt1234567",
+       "imdb_rating": 7.5,
+       "img_url": "https://m.media-amazon.com/images/...",
+       "genre": "Action, Thriller",
+       "production_year": 2024,
+       "length": 120,
+       "video_url": "https://archive.org/download/..."
+     }'
+   
+   Response:
+   {
+     "id": 51,
+     "name": "New Movie",
+     "archive_identifier": "new_movie_2024",
+     "message": "Movie created successfully"
+   }
+
+--------------------------------------------------------------------------------
+
+5. UPDATE MOVIE
+   Method: PUT or PATCH
+   Path: /movies/<id>/update/
+   
+   Example:
+   curl -X PUT http://localhost:8000/movies/1/update/ \
+     -H "Content-Type: application/json" \
+     -d '{
+       "name": "Updated Movie Title",
+       "imdb_rating": 8.5,
+       "genre": "Drama, Romance"
+     }'
+   
+   Response:
+   {
+     "id": 1,
+     "name": "Updated Movie Title",
+     "message": "Movie updated successfully"
+   }
+
+--------------------------------------------------------------------------------
+
+6. DELETE MOVIE
+   Method: DELETE
+   Path: /movies/<id>/delete/
+   
+   Example:
+   curl -X DELETE http://localhost:8000/movies/1/delete/
+   
+   Response:
+   {
+     "message": "Movie \"His Girl Friday\" deleted successfully"
+   }
+
+--------------------------------------------------------------------------------
+
+7. STREAM VIDEO
    Method: GET
    Path: /movies/<id>/stream/
    
@@ -88,7 +155,7 @@ MOVIE ENDPOINTS
 COMMENT ENDPOINTS
 ================================================================================
 
-5. LIST ALL COMMENTS
+8. LIST ALL COMMENTS
    Method: GET
    Path: /comments/
    
